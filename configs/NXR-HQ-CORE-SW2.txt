@@ -1,0 +1,200 @@
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service compress-config
+!
+hostname NXR-HQ-CORE-SW2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+username netadmin privilege 15 secret 5 $1$YCHV$jLf2BGMyUKwlaga7aIEln.
+no aaa new-model
+clock timezone WAT 1 0
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain-lookup
+ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+spanning-tree vlan 10,20 priority 8192
+spanning-tree vlan 30,40 priority 4096
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Port-channel10
+ description L3-ETHERCHANNEL | To NXR-HQ-CORE-SW1 | 11.1.1.0/24
+ no switchport
+ ip address 11.1.1.2 255.255.255.0
+!
+interface GigabitEthernet0/0
+ description WAN-UPLINK | To NXR-HQ-EDGE-R1 Gi2 | 13.1.1.0/24
+ no switchport
+ ip address 13.1.1.1 255.255.255.0
+ negotiation auto
+!
+interface GigabitEthernet0/1
+ description ETHERCHANNEL-MEMBER | Po10 | To NXR-HQ-CORE-SW1
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 10 mode on
+!
+interface GigabitEthernet0/2
+ description ETHERCHANNEL-MEMBER | Po10 | To NXR-HQ-CORE-SW1
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 10 mode on
+!
+interface GigabitEthernet0/3
+ description ETHERCHANNEL-MEMBER | Po10 | To NXR-HQ-CORE-SW1
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 10 mode on
+!
+interface GigabitEthernet1/0
+ description ETHERCHANNEL-MEMBER | Po10 | To NXR-HQ-CORE-SW1
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 10 mode on
+!
+interface GigabitEthernet1/1
+ description TRUNK-DOWNLINK | To NXR-HQ-ACC-SW1
+ negotiation auto
+!
+interface GigabitEthernet1/2
+ description TRUNK-DOWNLINK | To NXR-HQ-ACC-SW2
+ negotiation auto
+!
+interface GigabitEthernet1/3
+ description TRUNK-DOWNLINK | To NXR-HQ-ACC-SW3
+ negotiation auto
+!
+interface GigabitEthernet2/0
+ description TRUNK-DOWNLINK | To NXR-HQ-ACC-SW4
+ negotiation auto
+!
+interface GigabitEthernet2/1
+ description UNUSED | No Connection
+ negotiation auto
+!
+interface GigabitEthernet2/2
+ description UNUSED | No Connection
+ negotiation auto
+!
+interface GigabitEthernet2/3
+ description UNUSED | No Connection
+ negotiation auto
+!
+interface Vlan10
+ description SVI | Finance-and-Accounts | HSRP-Standby | 10.1.1.253
+ ip address 10.1.1.253 255.255.255.0
+ standby 10 ip 10.1.1.100
+ standby 10 priority 90
+!
+interface Vlan20
+ description SVI | Engineering-and-Development | HSRP-Standby | 20.1.1.253
+ ip address 20.1.1.253 255.255.255.0
+ standby 10 ip 20.1.1.100
+ standby 10 priority 90
+!
+interface Vlan30
+ description SVI | Sales-and-Business-Development | HSRP-Active | 30.1.1.253
+ ip address 30.1.1.253 255.255.255.0
+ standby 10 ip 30.1.1.100
+ standby 10 priority 110
+ standby 10 preempt
+!
+interface Vlan40
+ description SVI | Management-and-Executive | HSRP-Active | 40.1.1.253
+ ip address 40.1.1.253 255.255.255.0
+ standby 10 ip 40.1.1.100
+ standby 10 priority 110
+ standby 10 preempt
+!
+router ospf 1
+ router-id 3.3.3.3
+ passive-interface Vlan10
+ passive-interface Vlan20
+ passive-interface Vlan30
+ passive-interface Vlan40
+ network 10.1.1.0 0.0.0.255 area 0
+ network 11.1.1.0 0.0.0.255 area 0
+ network 13.1.1.0 0.0.0.255 area 0
+ network 20.1.1.0 0.0.0.255 area 0
+ network 30.1.1.0 0.0.0.255 area 0
+ network 40.1.1.0 0.0.0.255 area 0
+!
+ip forward-protocol nd
+!
+ip http server
+ip http secure-server
+!
+ip ssh server algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+ip ssh client algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+!
+!
+logging host 50.1.1.10
+!
+!
+!
+!
+control-plane
+!
+banner motd ^C
+=========================================================
+        NEXORA TECHNOLOGIES LTD -- RESTRICTED DEVICE
+=========================================================
+ This system is the property of Nexora Technologies Ltd.
+ Authorised access only.
+
+ Unauthorised access or use is strictly prohibited and
+ may be subject to criminal prosecution.
+
+ All activity on this system is monitored and logged.
+ By continuing you consent to this monitoring.
+
+ If you are not an authorised user -- DISCONNECT NOW.
+
+ For access requests contact: itsupport@nexora.com
+=========================================================
+^C
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login local
+ transport input ssh
+!
+ntp server 13.1.1.2
+!
+end
