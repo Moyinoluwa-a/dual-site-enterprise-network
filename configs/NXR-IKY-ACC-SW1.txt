@@ -1,0 +1,134 @@
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service compress-config
+!
+hostname NXR-IKY-ACC-SW1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+username netadmin privilege 15 secret 5 $1$Fsv8$Lxmca.LvXAYd0YG2fOYZI0
+no aaa new-model
+clock timezone WAT 1 0
+!
+!
+!
+!
+!
+no ipv6 cef
+!
+!
+!
+!
+!
+no ip domain-lookup
+!
+!
+ip cef
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ description TRUNK-UPLINK | To NXR-IKY-CORE-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/1
+ description TRUNK-UPLINK | To NXR-IKY-CORE-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/2
+ description TRUNK-UPLINK | To NXR-IKY-CORE-SW3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/3
+ description TRUNK-UPLINK | To NXR-IKY-CORE-SW4
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet1/0
+ description ACCESS | Linux-Server | IT-Infrastructure | VLAN50
+ switchport access vlan 50
+ switchport mode access
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface Ethernet1/1
+ description UNUSED | No Connection
+ shutdown
+!
+interface Ethernet1/2
+ description UNUSED | No Connection
+ shutdown
+!
+interface Ethernet1/3
+ description UNUSED | No Connection
+ shutdown
+!
+ip forward-protocol nd
+!
+no ip http server
+ip ssh server algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+ip ssh client algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+!
+!
+!
+logging host 50.1.1.10
+!
+!
+!
+control-plane
+!
+banner motd ^C
+=========================================================
+        NEXORA TECHNOLOGIES LTD -- RESTRICTED DEVICE
+=========================================================
+ This system is the property of Nexora Technologies Ltd.
+ Authorised access only.
+
+ Unauthorised access or use is strictly prohibited and
+ may be subject to criminal prosecution.
+
+ All activity on this system is monitored and logged.
+ By continuing you consent to this monitoring.
+
+ If you are not an authorised user -- DISCONNECT NOW.
+
+ For access requests contact: itsupport@nexora.com
+=========================================================
+^C
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login local
+ transport input ssh
+!
+ntp server 50.1.1.254
+!
+!
+end
