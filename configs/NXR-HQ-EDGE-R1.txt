@@ -1,0 +1,249 @@
+version 17.3
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service call-home
+platform qfp utilization monitor load 80
+platform punt-keepalive disable-kernel-core
+platform console serial
+!
+hostname NXR-IKY-EDGE-R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone WAT 1 0
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+!
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint TP-self-signed-1613333180
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-1613333180
+ revocation-check none
+ rsakeypair TP-self-signed-1613333180
+!
+!
+!
+!
+spanning-tree extend system-id
+!
+username netadmin privilege 15 secret 9 $9$wK0KyI9tw4NqoU$lmRgKX2.NGHCSOEpInWwrx8udhHCikSNSrDkobNWqRo
+!
+redundancy
+!
+!
+!
+!
+!
+!
+!
+track 1 ip sla 1 reachability
+!
+!
+!
+!
+!
+!
+!
+!
+!
+crypto isakmp policy 10
+ encryption aes 256
+ hash sha256
+ authentication pre-share
+ group 14
+crypto isakmp key LABKEY123 address 0.0.0.0
+!
+!
+crypto ipsec transform-set TSET esp-aes 256 esp-sha256-hmac
+ mode transport
+!
+!
+!
+crypto map CMAP 10 ipsec-isakmp
+ set peer 1.1.1.1
+ set transform-set TSET
+ match address VPN-TRAFFIC
+!
+!
+!
+!
+!
+!
+!
+!
+interface Tunnel1
+ description SITE-TO-SITE | IPsec-GRE Tunnel to NXR-HQ-EDGE-R1
+ ip address 192.168.10.2 255.255.255.0
+ tunnel source 2.2.2.2
+ tunnel destination 1.1.1.1
+!
+interface GigabitEthernet1
+ description LAN-UPLINK | To NXR-IKY-CORE-SW1 | 14.1.1.0/24
+ ip address 14.1.1.2 255.255.255.0
+ ip nat inside
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ description LAN-UPLINK | To NXR-IKY-CORE-SW2 | 15.1.1.0/24
+ ip address 15.1.1.2 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet3
+ description LAN-UPLINK | To NXR-IKY-CORE-SW3 | 16.1.1.0/24
+ ip address 16.1.1.2 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet4
+ description LAN-UPLINK | To NXR-IKY-CORE-SW4 | 17.1.1.0/24
+ ip address 17.1.1.2 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet5
+ description ISP-TRANSIT | To ISP-TRANSIT-R1 | 2.2.2.0/30
+ ip address 2.2.2.2 255.255.255.252
+ ip nat outside
+ negotiation auto
+ no mop enabled
+ no mop sysid
+ crypto map CMAP
+!
+interface GigabitEthernet6
+ description UNUSED | Shutdown - No Connection
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+!
+router eigrp 10
+ network 192.168.10.0
+ redistribute ospf 1 metric 10000 100 255 1 1500
+!
+router ospf 1
+ router-id 1.1.1.2
+ redistribute eigrp 10
+ network 14.1.1.0 0.0.0.255 area 0
+ network 15.1.1.0 0.0.0.255 area 0
+ network 16.1.1.0 0.0.0.255 area 0
+ network 17.1.1.0 0.0.0.255 area 0
+!
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+!
+ip nat inside source list 110 interface GigabitEthernet5 overload
+ip route 0.0.0.0 0.0.0.0 2.2.2.1 track 1
+ip ssh version 2
+!
+ip access-list extended VPN-TRAFFIC
+ 10 permit gre host 2.2.2.2 host 1.1.1.1
+!
+ip sla 1
+ icmp-echo 2.2.2.1 source-interface GigabitEthernet5
+  threshold 1000
+  timeout 2000
+  frequency 5
+ip sla schedule 1 life forever start-time now
+logging host 50.1.1.10
+ip access-list extended 110
+ 10 deny   ip host 2.2.2.2 host 1.1.1.1
+ 20 permit ip any any
+!
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+banner motd ^C
+=========================================================
+        NEXORA TECHNOLOGIES LTD -- RESTRICTED DEVICE
+=========================================================
+ This system is the property of Nexora Technologies Ltd.
+ Authorised access only.
+
+ Unauthorised access or use is strictly prohibited and
+ may be subject to criminal prosecution.
+
+ All activity on this system is monitored and logged.
+ By continuing you consent to this monitoring.
+
+
+ If you are not an authorised user -- DISCONNECT NOW.
+
+ For access requests contact: itsupport@nexora.com
+=========================================================
+^C
+!
+line con 0
+ logging synchronous
+ stopbits 1
+line vty 0 4
+ login local
+ transport input ssh
+!
+  destination transport-method http
+ntp server 8.8.8.8
+!
+!
+!
+!
+!
+end
