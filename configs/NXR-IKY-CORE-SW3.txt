@@ -1,0 +1,171 @@
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service compress-config
+!
+hostname NXR-IKY-CORE-SW3
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+username netadmin privilege 15 secret 5 $1$mvRm$PM.USF.8Jg9MLkHfbwbxF.
+no aaa new-model
+clock timezone WAT 1 0
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain-lookup
+ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+spanning-tree vlan 50,60 priority 12288
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Port-channel20
+ description L3-ETHERCHANNEL | To NXR-IKY-CORE-SW2 | 19.1.1.0/24
+ no switchport
+ ip address 19.1.1.2 255.255.255.0
+!
+interface Port-channel30
+ description L3-ETHERCHANNEL | To NXR-IKY-CORE-SW4 | 20.1.1.0/24
+ no switchport
+ ip address 20.1.1.1 255.255.255.0
+!
+interface GigabitEthernet0/0
+ description ETHERCHANNEL-MEMBER | Po20 | To NXR-IKY-CORE-SW2
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 20 mode auto
+!
+interface GigabitEthernet0/1
+ description ETHERCHANNEL-MEMBER | Po20 | To NXR-IKY-CORE-SW2
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 20 mode auto
+!
+interface GigabitEthernet0/2
+ description ETHERCHANNEL-MEMBER | Po30 | To NXR-IKY-CORE-SW4
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 30 mode active
+!
+interface GigabitEthernet0/3
+ description ETHERCHANNEL-MEMBER | Po30 | To NXR-IKY-CORE-SW4
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 30 mode active
+!
+interface GigabitEthernet1/0
+ description TRUNK-DOWNLINK | To NXR-IKY-ACC-SW1
+ negotiation auto
+!
+interface GigabitEthernet1/1
+ description TRUNK-DOWNLINK | To NXR-IKY-ACC-SW2
+ negotiation auto
+!
+interface GigabitEthernet1/2
+ description WAN-UPLINK | To NXR-IKY-EDGE-R1 Gi3 | 16.1.1.0/24
+ no switchport
+ ip address 16.1.1.1 255.255.255.0
+ negotiation auto
+!
+interface GigabitEthernet1/3
+ description UNUSED | No Connection
+ negotiation auto
+!
+interface Vlan50
+ description SVI | IT-Infrastructure | HSRP-Listen | 50.1.1.252
+ ip address 50.1.1.252 255.255.255.0
+ standby 20 ip 50.1.1.100
+ standby 20 priority 85
+!
+interface Vlan60
+ description SVI | Customer-Support | HSRP-Listen | 60.1.1.252
+ ip address 60.1.1.252 255.255.255.0
+ standby 20 ip 60.1.1.100
+ standby 20 priority 85
+!
+router ospf 1
+ router-id 3.3.3.3
+ passive-interface Vlan50
+ passive-interface Vlan60
+ network 16.1.1.0 0.0.0.255 area 0
+ network 19.1.1.0 0.0.0.255 area 0
+ network 20.1.1.0 0.0.0.255 area 0
+ network 50.1.1.0 0.0.0.255 area 0
+ network 60.1.1.0 0.0.0.255 area 0
+!
+ip forward-protocol nd
+!
+ip http server
+ip http secure-server
+!
+ip ssh server algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+ip ssh client algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+!
+!
+logging host 50.1.1.10
+!
+!
+!
+!
+control-plane
+!
+banner motd ^C
+=========================================================
+        NEXORA TECHNOLOGIES LTD -- RESTRICTED DEVICE
+=========================================================
+ This system is the property of Nexora Technologies Ltd.
+ Authorised access only.
+
+ Unauthorised access or use is strictly prohibited and
+ may be subject to criminal prosecution.
+
+ All activity on this system is monitored and logged.
+ By continuing you consent to this monitoring.
+
+ If you are not an authorised user -- DISCONNECT NOW.
+
+ For access requests contact: itsupport@nexora.com
+=========================================================
+^C
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login local
+ transport input ssh
+!
+ntp server 16.1.1.2
+!
+end
