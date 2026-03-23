@@ -1,0 +1,115 @@
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service compress-config
+!
+hostname NXR-HQ-ACC-SW4
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+username netadmin privilege 15 secret 5 $1$iXm8$SGXH1kqJoN2/gHmRSzwlv.
+no aaa new-model
+clock timezone WAT 1 0
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain-lookup
+ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+ description TRUNK-UPLINK | To NXR-HQ-CORE-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/1
+ description TRUNK-UPLINK | To NXR-HQ-CORE-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface Ethernet0/2
+ description ACCESS | VPC7 | Management-and-Executive | VLAN40
+ switchport access vlan 40
+ switchport mode access
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+interface Ethernet0/3
+ description ACCESS | VPC8 | Management-and-Executive | VLAN40
+ switchport access vlan 40
+ switchport mode access
+ spanning-tree portfast edge
+ spanning-tree bpduguard enable
+!
+ip forward-protocol nd
+!
+no ip http server
+!
+ip ssh server algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+ip ssh client algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+!
+!
+logging host 50.1.1.10
+!
+!
+!
+control-plane
+!
+banner motd ^C
+=========================================================
+        NEXORA TECHNOLOGIES LTD -- RESTRICTED DEVICE
+=========================================================
+ This system is the property of Nexora Technologies Ltd.
+ Authorised access only.
+
+ Unauthorised access or use is strictly prohibited and
+ may be subject to criminal prosecution.
+
+ All activity on this system is monitored and logged.
+ By continuing you consent to this monitoring.
+
+ If you are not an authorised user -- DISCONNECT NOW.
+
+ For access requests contact: itsupport@nexora.com
+=========================================================
+^C
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+ login local
+ transport input ssh
+!
+ntp server 40.1.1.253
+!
+!
+end
