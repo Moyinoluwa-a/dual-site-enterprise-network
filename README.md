@@ -1,7 +1,7 @@
 # Dual-Site Enterprise Network — Nexora Technologies Ltd
 
 > A production-grade enterprise network connecting Lagos HQ and Ikeja Branch, 
-> built in GNS3 using Cisco IOS and IOS-XE devices.
+> built in EVE-NG using Cisco IOS and IOS-XE devices.
 
 ---
 
